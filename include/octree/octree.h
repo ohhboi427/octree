@@ -1,6 +1,7 @@
 #pragma once
 
-#include <bit>
+#include "math/bit.h"
+#include "math/pow.h"
 
 #include <vector>
 
@@ -8,46 +9,33 @@
 
 namespace ob
 {
-	constexpr auto pow_ce(uint64_t base, uint64_t exponent) -> uint64_t
-	{
-		uint64_t result = 1u;
-
-		for(uint64_t i = 0u; i < exponent; ++i)
-		{
-			result *= base;
-		}
-
-		return result;
-	}
-
-	constexpr auto pop_count_byte(uint8_t byte, uint8_t offset = 0u, uint8_t count = 8u) -> size_t
-	{
-		uint8_t mask = ~(~0u << count) << offset;
-		byte &= mask;
-
-		return std::popcount(byte);
-	}
-
-	constexpr auto pop_count_range(const uint8_t* begin, const uint8_t* end) -> size_t
-	{
-		uint64_t sum = 0u;
-
-		while(begin < end)
-		{
-			sum += std::popcount(*begin);
-
-			++begin;
-		}
-
-		return sum;
-	}
-
+	/**
+	 * @brief A sparse octree of bytes.
+	 * 
+	 * @tparam L The number of levels of the tree.
+	 */
 	template<size_t L>
 	class octree
 	{
 	public:
+		/**
+		 * @brief The edge size of the octree.
+		 *
+		 * Equals to 2^@ref L
+		 */
 		static constexpr size_t size = pow_ce(2u, L);
 
+		/**
+		 * @brief Retrieves a value from the octree.
+		 *
+		 * Will return 0 if the value is not stored in the tree.
+		 * 
+		 * @param x The x position of the coordinate.
+		 * @param y The y position of the coordinate.
+		 * @param z The z position of the coordinate.
+		 * 
+		 * @return A value at the given coordinate.
+		 */
 		auto get(size_t x, size_t y, size_t z) const noexcept -> uint8_t
 		{
 			if(m_nodes.empty())
@@ -97,6 +85,16 @@ namespace ob
 			return m_nodes[head_index];
 		}
 
+		/**
+		 * @brief Sets a value in the octree.
+		 *
+		 * Can't be set to 0.
+		 * 
+		 * @param x The x position of the coordinate.
+		 * @param y The y position of the coordinate.
+		 * @param z The z position of the coordinate.
+		 * @param value The new value.
+		 */
 		auto set(size_t x, size_t y, size_t z, uint8_t value) -> void
 		{
 			if(value == 0u)
