@@ -11,7 +11,7 @@ namespace ob
 {
 	/**
 	 * @brief A sparse octree of bytes.
-	 * 
+	 *
 	 * @tparam L The number of levels of the tree.
 	 */
 	template<size_t L>
@@ -29,11 +29,11 @@ namespace ob
 		 * @brief Retrieves a value from the octree.
 		 *
 		 * Will return 0 if the value is not stored in the tree.
-		 * 
+		 *
 		 * @param x The x position of the coordinate.
 		 * @param y The y position of the coordinate.
 		 * @param z The z position of the coordinate.
-		 * 
+		 *
 		 * @return A value at the given coordinate.
 		 */
 		auto get(size_t x, size_t y, size_t z) const noexcept -> uint8_t
@@ -61,6 +61,11 @@ namespace ob
 
 				uint8_t child_mask = 1u << child_index;
 
+				if(!(m_nodes[head_index] & child_mask))
+				{
+					return 0u;
+				}
+
 				size_t skip_count =
 					pop_count_byte(m_nodes[parent_index], child_index_in_parent + 1u) + // The number of children on the same layer after the current.
 					pop_count_range(&m_nodes[parent_index] + 1u, &m_nodes[head_index]) + // The number of nodes between the head and parent.
@@ -69,15 +74,8 @@ namespace ob
 
 				child_index_in_parent = child_index;
 
-				if(m_nodes[head_index] & child_mask)
-				{
-					parent_index = head_index;
-					head_index += skip_count;
-				}
-				else
-				{
-					return 0u;
-				}
+				parent_index = head_index;
+				head_index += skip_count;
 
 				half /= 2u;
 			}
@@ -89,7 +87,7 @@ namespace ob
 		 * @brief Sets a value in the octree.
 		 *
 		 * Can't be set to 0.
-		 * 
+		 *
 		 * @param x The x position of the coordinate.
 		 * @param y The y position of the coordinate.
 		 * @param z The z position of the coordinate.
@@ -133,17 +131,13 @@ namespace ob
 
 				child_index_in_parent = child_index;
 
-				if(m_nodes[head_index] & child_mask)
-				{
-					parent_index = head_index;
-					head_index += skip_count;
-				}
-				else
-				{
-					m_nodes[head_index] |= child_mask;
+				parent_index = head_index;
+				head_index += skip_count;
 
-					parent_index = head_index;
-					head_index += skip_count;
+				if(!(m_nodes[parent_index] & child_mask))
+				{
+					m_nodes[parent_index] |= child_mask;
+
 					auto new_node = m_nodes.insert(m_nodes.begin() + head_index, 0u);
 				}
 
