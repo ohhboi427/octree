@@ -53,7 +53,7 @@ namespace ob
 				uint8_t child_index =
 					(x >= half) |
 					((y >= half) << 1u) |
-					((z >= half) << 1u);
+					((z >= half) << 2u);
 
 				x -= (x >= half) * half;
 				y -= (y >= half) * half;
@@ -117,7 +117,7 @@ namespace ob
 				uint8_t child_index =
 					(x >= half) |
 					((y >= half) << 1u) |
-					((z >= half) << 1u);
+					((z >= half) << 2u);
 
 				x -= (x >= half) * half;
 				y -= (y >= half) * half;
